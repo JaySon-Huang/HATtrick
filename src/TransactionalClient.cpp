@@ -1,6 +1,8 @@
 
 #include "TransactionalClient.h"
 #include <string>
+#include "SQLDialect.h"
+#include "UserInput.h"
 
 TransactionalClient::TransactionalClient(){}
 
@@ -22,7 +24,8 @@ int TransactionalClient::NewOrderTransactionPS(SQLHDBC& dbc){
     ostringstream ckey;
     ckey << setw(9) << setfill('0') << custkey;
     string c = "Customer#";
-    char* custName = &(c.append(ckey.str()))[0];
+    c += ckey.str();
+    char* custName = const_cast<char *>(c.c_str());
     // Choose a random number of orders 
     int numOrders = DataSrc::uniformIntDist(1, 7);
     char* partKeys = 0; char* suppNames = 0;  char* dateNames = 0;  char* ordPriorities = 0;  char* shipPriorities = 0;  \
@@ -110,7 +113,12 @@ int TransactionalClient::NewOrderTransactionPS(SQLHDBC& dbc){
     Driver::bindCharParam(GetTransactionStmt(), tableName, 0, 16);
     Driver::bindIntParam(GetTransactionStmt(), txn_num, 17);
     while(ret != 0){
-    	ret = Driver::executeStmtDiar(GetTransactionStmt(), SQLDialect::transactionalQueries[UserInput::getdbChoice()][0].c_str());
+        auto full_sql = SQLDialect::transactionalQueries[UserInput::getdbChoice()][0];
+        ret           = Driver::executeStmtDiar(GetTransactionStmt(), full_sql.c_str(), __PRETTY_FUNCTION__);
+        if (ret != 0)
+        {
+            cout << __PRETTY_FUNCTION__ << ":ret=" << ret << ", sql=" << full_sql << endl;
+        }
     }
     Driver::freeStmtHandle(GetTransactionStmt());
     if (ret == 0) return 1;
@@ -212,7 +220,12 @@ int TransactionalClient::NewOrderTransactionSS(SQLHDBC& dbc){
     Driver::bindIntParam(GetTransactionStmt(), tax, 22);
     Driver::bindCharParam(GetTransactionStmt(), shipm, 10, 23);
     while(ret != 0){
-    	ret = Driver::executeStmtDiar(GetTransactionStmt(), SQLDialect::transactionalQueries[UserInput::getdbChoice()][0].c_str());
+        auto full_sql = SQLDialect::transactionalQueries[UserInput::getdbChoice()][0];
+        ret           = Driver::executeStmtDiar(GetTransactionStmt(), full_sql.c_str(), __PRETTY_FUNCTION__);
+        if (ret != 0)
+        {
+            cout << __PRETTY_FUNCTION__ << ":ret=" << ret << ", sql=" << full_sql << endl;
+        }
     }
     Driver::freeStmtHandle(GetTransactionStmt());
     if (ret == 0) return 1;
@@ -343,7 +356,12 @@ int TransactionalClient::PaymentTransactionSP(SQLHDBC& dbc){
     Driver::bindIntParam(GetTransactionStmt(), txn_num, 6);
     [[maybe_unused]] int ret = -1;
     while(ret != 0){
-    	ret = Driver::executeStmtDiar(GetTransactionStmt(), SQLDialect::transactionalQueries[UserInput::getdbChoice()][1].c_str());
+        auto full_sql = SQLDialect::transactionalQueries[UserInput::getdbChoice()][1];
+        ret           = Driver::executeStmtDiar(GetTransactionStmt(), full_sql.c_str(), __PRETTY_FUNCTION__);
+        if (ret != 0)
+        {
+            cout << __PRETTY_FUNCTION__ << ":ret=" << ret << ", sql=" << full_sql << endl;
+        }
     }	
     Driver::freeStmtHandle(GetTransactionStmt());
     if (ret == 0) return 1;
@@ -404,7 +422,12 @@ int TransactionalClient::CountOrdersTransactionSP(SQLHDBC& dbc){
     Driver::bindCharParam(GetTransactionStmt(), tableName, 0, 2);
     Driver::bindIntParam(GetTransactionStmt(), txn_num, 3);
     while(ret != 0){
-    	ret = Driver::executeStmtDiar(GetTransactionStmt(), SQLDialect::transactionalQueries[UserInput::getdbChoice()][2].c_str());
+        auto full_sql = SQLDialect::transactionalQueries[UserInput::getdbChoice()][2];
+        ret           = Driver::executeStmtDiar(GetTransactionStmt(), full_sql.c_str(), __PRETTY_FUNCTION__);
+        if (ret != 0)
+        {
+            cout << __PRETTY_FUNCTION__ << ":ret=" << ret << ", sql=" << full_sql << endl;
+        }
     }	
     Driver::freeStmtHandle(GetTransactionStmt());
     if (ret == 0) return 1;

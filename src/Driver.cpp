@@ -68,16 +68,16 @@ void Driver::connectDB2(SQLHENV& env, SQLHDBC& dbc){ // For Postgres streaming r
     }
 }
 
-int Driver::executeStmtDiar(SQLHSTMT& stmt, const char* query){
+int Driver::executeStmtDiar(SQLHSTMT& stmt, const char* query, const char *WHO){
     SQLRETURN ret = SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
     if (ret == SQL_SUCCESS_WITH_INFO) {
-	printf("Driver reported the following diagnostics\nq=`%s`\n", query);
+	printf("Driver reported the following diagnostics\nWHO=%s\nq=`%s`\n", WHO, query);
         extract_error("SQLExecuteDirect", stmt, SQL_HANDLE_STMT);
 	return 1;
       }
     
     else if(ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO) {
-      fprintf(stderr, "\nFailed to execute directly the stmt!\nq=`%s`\n", query);
+      fprintf(stderr, "\nFailed to execute directly the stmt!\nWHO=%s\nq=`%s`\n", WHO, query);
       extract_error("FAIL: SQLExecuteDirect", stmt, SQL_HANDLE_STMT);
       return 2;
     }

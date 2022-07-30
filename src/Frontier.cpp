@@ -14,11 +14,13 @@ void  Frontier::deleteTuples(){
     for (unsigned int i = 0; i < num_of_stmt; i++)
     {
         if (i != num_of_stmt - 1 && i != num_of_stmt - 2)
-            Driver::executeStmtDiar(stmt, SQLDialect::deleteTuplesStmt[UserInput::getdbChoice()][i].c_str());
+            Driver::executeStmtDiar(stmt, SQLDialect::deleteTuplesStmt[UserInput::getdbChoice()][i].c_str(), __PRETTY_FUNCTION__);
         else
         {
             Driver::executeStmtDiar(
-                stmt, (SQLDialect::deleteTuplesStmt[UserInput::getdbChoice()][i] + std::to_string(UserInput::getLoSize()) + q).c_str());
+                stmt,
+                (SQLDialect::deleteTuplesStmt[UserInput::getdbChoice()][i] + std::to_string(UserInput::getLoSize()) + q).c_str(),
+                __PRETTY_FUNCTION__);
         }
     }
     Driver::freeStmtHandle(stmt);
@@ -39,17 +41,21 @@ void Frontier::createFreshnessTable(const int tc)
     {
         s_tc = std::to_string(i);
         Driver::executeStmtDiar(stmt,
-                                (SQLDialect::deleteFreshnessTableStmt[0].c_str() + s_tc + SQLDialect::deleteFreshnessTableStmt[1]).c_str());
+                                (SQLDialect::deleteFreshnessTableStmt[0].c_str() + s_tc + SQLDialect::deleteFreshnessTableStmt[1]).c_str(),
+                                __PRETTY_FUNCTION__);
         Driver::executeStmtDiar(stmt,
-                                (SQLDialect::createFreshnessTableStmt[0].c_str() + s_tc + SQLDialect::createFreshnessTableStmt[1]).c_str());
+                                (SQLDialect::createFreshnessTableStmt[0].c_str() + s_tc + SQLDialect::createFreshnessTableStmt[1]).c_str(),
+                                __PRETTY_FUNCTION__);
         Driver::executeStmtDiar(stmt,
                                 (SQLDialect::populateFreshnessTableStmt[0] + s_tc + SQLDialect::populateFreshnessTableStmt[1] + s_tc
                                  + SQLDialect::populateFreshnessTableStmt[2])
-                                    .c_str());
+                                    .c_str(),
+                                __PRETTY_FUNCTION__);
         if (UserInput::getdbChoice() == tidb)
         {
             Driver::executeStmtDiar(stmt,
-                                    (SQLDialect::populateFreshnessTableStmt[3] + s_tc + SQLDialect::populateFreshnessTableStmt[4]).c_str());
+                                    (SQLDialect::populateFreshnessTableStmt[3] + s_tc + SQLDialect::populateFreshnessTableStmt[4]).c_str(),
+                                    __PRETTY_FUNCTION__);
         }
     }
     Driver::freeStmtHandle(stmt);

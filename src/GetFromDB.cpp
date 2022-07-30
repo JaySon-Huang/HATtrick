@@ -8,7 +8,7 @@ void GetFromDB::getCustPhones(vector<string>&  c_phones){
     char phone[30] = {0};
     Driver::connectDB(env, dbc);
     Driver::allocHandle(dbc,stmt);
-    Driver::executeStmtDiar(stmt, (SQLDialect::init[0]).c_str());
+    Driver::executeStmtDiar(stmt, (SQLDialect::init[0]).c_str(), __PRETTY_FUNCTION__);
     Driver::bindCharColumn(stmt, phone, 16, 1);
     for (int i=0; i<UserInput::getCustSize(); i++) {
         SQLRETURN f = SQLFetch(stmt);
@@ -28,7 +28,7 @@ void GetFromDB::getSuppPhones(vector<string>&  s_phones){
     char phone[30] = {0};
     Driver::connectDB(env, dbc);
     Driver::allocHandle(dbc,stmt);
-    Driver::executeStmtDiar(stmt, (SQLDialect::init[1]).c_str());
+    Driver::executeStmtDiar(stmt, (SQLDialect::init[1]).c_str(), __PRETTY_FUNCTION__);
     Driver::bindCharColumn(stmt, phone, 16, 1);
     for (int i=0; i<UserInput::getCustSize(); i++) {
         SQLRETURN f = SQLFetch(stmt);
@@ -48,7 +48,7 @@ void GetFromDB::getNumOrders(int& lo_orderkey, SQLHENV& env){
     SQLLEN indicator = 0;
     Driver::connectDB(env, dbc);
     Driver::allocHandle(dbc,stmt);
-    Driver::executeStmtDiar(stmt, (SQLDialect::init[2]).c_str());
+    Driver::executeStmtDiar(stmt, (SQLDialect::init[2]).c_str(), __PRETTY_FUNCTION__);
     SQLRETURN f = SQLFetch(stmt);
     if (f == SQL_SUCCESS)
         SQLGetData(stmt, 1, SQL_C_DEFAULT, &lo_orderkey, 0, &indicator);
