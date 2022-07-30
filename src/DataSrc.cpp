@@ -1,4 +1,6 @@
 #include "DataSrc.h"
+#include <cassert>
+#include <exception>
 
 const vector<string> DataSrc::partName = {
     "almond", "antique", "aquamarine", "azure", "beige", "bisque", "black", "blanched",  "blue", "blush",
@@ -16,8 +18,8 @@ const vector<string> DataSrc::partType = {         //S1(0-5), S2(6-10), S3(11-15
 const vector<string> DataSrc::partContainer = {
                     "SM", "LG", "MED", "JUMBO", "WRAP", "CASE", "BOX", "BAG", "JAR",
                     "PKG", "PACK", "CAN", "DRUM"}; //S1(0-4), S2(5-12)
-const vector<string> DataSrc::ordPriority = {
-                    "1-URGENT", "2-HIGH", "3-MEDIUM", "4-NOT SPECIFIED", "5-LOW"}; //#5
+// const vector<string_view> DataSrc::ordPriority = {
+//                     "1-URGENT", "2-HIGH", "3-MEDIUM", "4-NOT SPECIFIED", "5-LOW"}; //#5
 const vector<string> DataSrc::shipMode = {
                     "REG AIR", "AIR", "RAIL", "SHIP", "TRUCK", "MAIL", "FOB"};  //#7
 const vector<string> DataSrc::nation = {
@@ -45,7 +47,7 @@ const Holiday DataSrc::holidays[] = {
                 "27101997", "26101998"}}, {"Easter", {"19041992", "11041993", "03041994", "16041995", "07041996", "30031997", "12041998"}}, \
                 {"Valentine's Day", {"1402"}}, {"Fourth of July", {"0407"}}};
 
-mt19937 DataSrc::mt(123456789);
+thread_local mt19937 DataSrc::mt(123456789);
 vector<double> DataSrc::price;
 vector<string> DataSrc::c_phone;
 vector<string> DataSrc::s_phone;
@@ -58,7 +60,7 @@ string DataSrc::getShipMode(int idx){
 }
 
 string DataSrc::getOrdPriority(int idx){
-    return DataSrc::ordPriority[idx];
+    return string(DataSrc::ordPriority[idx]);
 }
 
 string DataSrc::getMonthName(int idx){
@@ -81,8 +83,8 @@ int DataSrc::uniformIntDist(int minValue, int maxValue){
 
 float DataSrc::uniformRealDist(float minValue, float maxValue){
     /* Continuous uniform distribution. */
-	uniform_real_distribution<float> uniCont(minValue, maxValue);
-	return uniCont(DataSrc::mt);
+    uniform_real_distribution<float> uniCont(minValue, maxValue);
+    return uniCont(DataSrc::mt);
 }
 
 string DataSrc::getPartName(ofstream& stream){
@@ -163,7 +165,7 @@ void DataSrc::getCommitDate(ofstream& stream, int& key){
 
 void DataSrc::getOrdPriority(ofstream& stream){
     /* Generate LO_ORDPRIORITY for the current entry. */
-	stream << DataSrc::ordPriority[DataSrc::uniformIntDist(0, 4)] + UserInput::getDelimiter();
+	stream << DataSrc::ordPriority[DataSrc::uniformIntDist(0, 4)] << UserInput::getDelimiter();
 }
 
 void DataSrc::getShipMode(ofstream& stream){

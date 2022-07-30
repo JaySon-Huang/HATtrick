@@ -15,7 +15,7 @@ using namespace std;
 class AnalyticalClient{
 private:
     thread::id threadNum;     // id of thread
-    vector<SQLHSTMT> qStmt; 
+    SQLHSTMT qStmt[2 * 13 + 2];
     int queriesNum;       // counter of queries executed in testing period in total
     vector<double> freshnessVector;   // freshness  for each analytical query executed in the current thread
     vector<vector<double>> executionTime;   // execution time of each query
@@ -29,7 +29,7 @@ public:
     int GetQueriesNum() const;
     thread::id GetThreadNum();
     void PrepareAnalyticalStmt(SQLHDBC& dbc);
-    int ExecuteQuery(int& q, Globals* g);
+    int ExecuteQuery(int q, Globals* g);
     void SetFreshness(double& freshness);
     vector<double>& GetFreshness();
     void FreeQueryStmt(Globals* g);

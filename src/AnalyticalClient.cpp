@@ -1,11 +1,12 @@
 #include "AnalyticalClient.h"
+#include <cassert>
 
 AnalyticalClient::AnalyticalClient() {
-    qStmt = vector<SQLHSTMT>(2*SQLDialect::analyticalQueries.size(), 0);
-    queriesNum = 0;
-    freshnessVector = {0};  // freshness score for each analytical query executed in the current thread
-    executionTime = vector<vector<double>>(13);   // execution time of each query
-    testDuration = 0;
+  queriesNum = 0;
+  freshnessVector = {0}; // freshness score for each analytical query executed
+                         // in the current thread
+  executionTime = vector<vector<double>>(13); // execution time of each query
+  testDuration = 0;
 }
 
 void AnalyticalClient::SetThreadNum(thread::id num){
@@ -85,7 +86,8 @@ void AnalyticalClient::PrepareAnalyticalStmt(SQLHDBC& dbc){
        }
 }
 
-int AnalyticalClient::ExecuteQuery(int& q, Globals* g){
+int AnalyticalClient::ExecuteQuery(const int q, Globals* g){
+    assert(q < 13);
     int ret = -1;
     vector<double> fresh;
     double maxFresh = 0.0;
@@ -113,17 +115,20 @@ int AnalyticalClient::ExecuteQuery(int& q, Globals* g){
    if(ret==0 && done==1 && g->freshnessPeriod == 1 && UserInput::getTranClients()>0){
         SQLBindCol(qStmt[q+13], 1, SQL_C_DEFAULT, ftxnNum, sizeof(ftxnNum), &indicator1);
         for(int j=0; j<UserInput::getTranClients(); j++){
-            Driver::fetchData(qStmt[q+13]);
-            Driver::getIntData(qStmt[q+13], 1, ftxnNum[j]);
+            auto &x = qStmt[q+13];
+            Driver::fetchData(x);
+            Driver::getIntData(x, 1, ftxnNum[j]);
             fresh.push_back(g->containers[j]->GetFirstUnseenTxn(GetStartTimeQuery(), ftxnNum[j]));
-	}
-	maxFresh = *max_element(fresh.begin(), fresh.end());
-	SetFreshness(maxFresh);
+	    }
+        maxFresh = *max_element(fresh.begin(), fresh.end());
+        SetFreshness(maxFresh);
         Driver::resetStmt(qStmt[q+13]);
-	done = 0;
+        qStmt[q + 13] = nullptr;
+        done = 0;
     }
     else if((g->freshnessPeriod == 0 &&  UserInput::getTranClients() >= 0) || (g->freshnessPeriod == 1 &&  UserInput::getTranClients() == 0)){
         Driver::resetStmt(qStmt[q]);
+        qStmt[q] = nullptr;
     }
     return ret;
 }
@@ -132,9 +137,13 @@ void AnalyticalClient::FreeQueryStmt(Globals* g){
     for(unsigned int j=0; j<SQLDialect::analyticalQueries.size(); j++){
         if(UserInput::getTranClients()>0 && g->freshnessPeriod==1){
                 Driver::freeStmtHandle(qStmt[j+13]);
+                qStmt[j + 13] = nullptr;
         }
         if((g->freshnessPeriod == 0 &&  UserInput::getTranClients() > 0) || (g->freshnessPeriod == 1 &&  UserInput::getTranClients() == 0))
-                Driver::freeStmtHandle(qStmt[j]);
+        {
+            Driver::freeStmtHandle(qStmt[j]);
+            qStmt[j] = nullptr;
+        }
     }
 }
 

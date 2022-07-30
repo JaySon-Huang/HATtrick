@@ -3,6 +3,7 @@
 #include <string>
 #include "SQLDialect.h"
 #include "UserInput.h"
+#include <cassert>
 
 TransactionalClient::TransactionalClient(){}
 
@@ -19,6 +20,9 @@ void TransactionalClient::PrepareFreshnessStmt(SQLHDBC &dbc){
 }
 
 int TransactionalClient::NewOrderTransactionPS(SQLHDBC& dbc){
+    auto x = UserInput::getdbChoice();
+    assert(x < 4);
+    std::string entering = string(SQLDialect::pgTransactionalQueries[0]);
     // Create a random LO_CUSTNAME.
     int custkey = DataSrc::uniformIntDist(1, UserInput::getCustSize());
     ostringstream ckey;
@@ -94,33 +98,42 @@ int TransactionalClient::NewOrderTransactionPS(SQLHDBC& dbc){
     string table = "freshness" + to_string(client_num);
     char* tableName = const_cast<char *>(table.c_str());
     // Call the NewOrder txn
-    SQLAllocHandle(SQL_HANDLE_STMT, dbc, &GetTransactionStmt());
-    Driver::bindIntParam(GetTransactionStmt(), orderKey, 1);
-    Driver::bindIntParam(GetTransactionStmt(), numOrders, 2);
-    Driver::bindCharParam(GetTransactionStmt(), custName, 25, 3);
-    Driver::bindCharParam(GetTransactionStmt(),  partKeys, 0, 4);
-    Driver::bindCharParam(GetTransactionStmt(),  suppNames, 0, 5);
-    Driver::bindCharParam(GetTransactionStmt(),  dateNames, 0, 6);
-    Driver::bindCharParam(GetTransactionStmt(),  ordPriorities, 0, 7);
-    Driver::bindCharParam(GetTransactionStmt(),  shipPriorities, 0, 8);
-    Driver::bindCharParam(GetTransactionStmt(),  quantities, 0, 9);
-    Driver::bindCharParam(GetTransactionStmt(),  extendedPrices, 0, 10);
-    Driver::bindCharParam(GetTransactionStmt(),  discounts, 0, 11);
-    Driver::bindCharParam(GetTransactionStmt(),  revenues, 0, 12);
-    Driver::bindCharParam(GetTransactionStmt(),  supplyCosts, 0, 13);
-    Driver::bindCharParam(GetTransactionStmt(),  taxes, 0, 14);
-    Driver::bindCharParam(GetTransactionStmt(),  shipModes, 0, 15);
-    Driver::bindCharParam(GetTransactionStmt(), tableName, 0, 16);
-    Driver::bindIntParam(GetTransactionStmt(), txn_num, 17);
+    SQLHSTMT tStmt;
+    Driver::createStmt(dbc, tStmt);
+    // SQLAllocHandle(SQL_HANDLE_STMT, dbc, &tStmt);
+    Driver::bindIntParam(tStmt, orderKey, 1);
+    Driver::bindIntParam(tStmt, numOrders, 2);
+    Driver::bindCharParam(tStmt, custName, 25, 3);
+    Driver::bindCharParam(tStmt,  partKeys, 0, 4);
+    Driver::bindCharParam(tStmt,  suppNames, 0, 5);
+    Driver::bindCharParam(tStmt,  dateNames, 0, 6);
+    Driver::bindCharParam(tStmt,  ordPriorities, 0, 7);
+    Driver::bindCharParam(tStmt,  shipPriorities, 0, 8);
+    Driver::bindCharParam(tStmt,  quantities, 0, 9);
+    Driver::bindCharParam(tStmt,  extendedPrices, 0, 10);
+    Driver::bindCharParam(tStmt,  discounts, 0, 11);
+    Driver::bindCharParam(tStmt,  revenues, 0, 12);
+    Driver::bindCharParam(tStmt,  supplyCosts, 0, 13);
+    Driver::bindCharParam(tStmt,  taxes, 0, 14);
+    Driver::bindCharParam(tStmt,  shipModes, 0, 15);
+    Driver::bindCharParam(tStmt, tableName, 0, 16);
+    Driver::bindIntParam(tStmt, txn_num, 17);
     while(ret != 0){
-        auto full_sql = SQLDialect::transactionalQueries[UserInput::getdbChoice()][0];
-        ret           = Driver::executeStmtDiar(GetTransactionStmt(), full_sql.c_str(), __PRETTY_FUNCTION__);
+        // cout << "ffffff:" << SQLDialect::transactionalQueries[UserInput::getdbChoice()][0] << endl;
+        auto x = UserInput::getdbChoice();
+        assert(x < 4);
+        std::string full_sql = string(
+            SQLDialect::pgTransactionalQueries[0]);
+        ret           = Driver::executeStmtDiar(tStmt, full_sql.c_str(), __PRETTY_FUNCTION__);
+        // cout << "ffffff:full_sql=" << full_sql << endl;
         if (ret != 0)
         {
-            cout << __PRETTY_FUNCTION__ << ":ret=" << ret << ", sql=" << full_sql << endl;
+          cout << __PRETTY_FUNCTION__ << ":ret=" << ret << ", sql=" << full_sql
+               << ", entering=" << entering << endl;
+          std::abort();
         }
     }
-    Driver::freeStmtHandle(GetTransactionStmt());
+    Driver::freeStmtHandle(tStmt);
     if (ret == 0) return 1;
     else return 0;
 }
@@ -195,39 +208,43 @@ int TransactionalClient::NewOrderTransactionSS(SQLHDBC& dbc){
     string shipmode = DataSrc::getShipMode(DataSrc::uniformIntDist(0,6));
     char* shipm = &shipmode[0];
     // Execute the insertion to the lineorder table
-    SQLAllocHandle(SQL_HANDLE_STMT, dbc, &GetTransactionStmt());
-    Driver::bindIntParam(GetTransactionStmt(), GetLoOrderKey(), 1);
-    Driver::bindCharParam(GetTransactionStmt(), c_name, 25, 2);
-    Driver::bindIntParam(GetTransactionStmt(), partkey1, 3);
-    Driver::bindIntParam(GetTransactionStmt(), partkey2, 4);
-    Driver::bindIntParam(GetTransactionStmt(), partkey3, 5);
-    Driver::bindIntParam(GetTransactionStmt(), partkey4, 6);
-    Driver::bindCharParam(GetTransactionStmt(), s_name, 25, 7);
-    Driver::bindCharParam(GetTransactionStmt(), s_name2, 25, 8);
-    Driver::bindCharParam(GetTransactionStmt(), s_name3, 25, 9);
-    Driver::bindCharParam(GetTransactionStmt(), s_name4, 25, 10);
-    Driver::bindCharParam(GetTransactionStmt(), d_date, 18, 11);
-    Driver::bindCharParam(GetTransactionStmt(), d_date2, 18, 12);
-    Driver::bindCharParam(GetTransactionStmt(), d_date3, 18, 13);
-    Driver::bindCharParam(GetTransactionStmt(), d_date4, 18, 14);
-    Driver::bindCharParam(GetTransactionStmt(), ord, 15, 15);
-    Driver::bindCharParam(GetTransactionStmt(), shipp, 1, 16);
-    Driver::bindIntParam(GetTransactionStmt(), quantity, 17);
-    Driver::bindDecParam(GetTransactionStmt(), extendedprice, 18);
-    Driver::bindIntParam(GetTransactionStmt(), discount, 19);
-    Driver::bindDecParam(GetTransactionStmt(), revenue, 20);
-    Driver::bindDecParam(GetTransactionStmt(), supplycost, 21);
-    Driver::bindIntParam(GetTransactionStmt(), tax, 22);
-    Driver::bindCharParam(GetTransactionStmt(), shipm, 10, 23);
+    SQLHSTMT tStmt;
+    Driver::createStmt(dbc, tStmt);
+    // SQLAllocHandle(SQL_HANDLE_STMT, dbc, &tStmt);
+    Driver::bindIntParam(tStmt, GetLoOrderKey(), 1);
+    Driver::bindCharParam(tStmt, c_name, 25, 2);
+    Driver::bindIntParam(tStmt, partkey1, 3);
+    Driver::bindIntParam(tStmt, partkey2, 4);
+    Driver::bindIntParam(tStmt, partkey3, 5);
+    Driver::bindIntParam(tStmt, partkey4, 6);
+    Driver::bindCharParam(tStmt, s_name, 25, 7);
+    Driver::bindCharParam(tStmt, s_name2, 25, 8);
+    Driver::bindCharParam(tStmt, s_name3, 25, 9);
+    Driver::bindCharParam(tStmt, s_name4, 25, 10);
+    Driver::bindCharParam(tStmt, d_date, 18, 11);
+    Driver::bindCharParam(tStmt, d_date2, 18, 12);
+    Driver::bindCharParam(tStmt, d_date3, 18, 13);
+    Driver::bindCharParam(tStmt, d_date4, 18, 14);
+    Driver::bindCharParam(tStmt, ord, 15, 15);
+    Driver::bindCharParam(tStmt, shipp, 1, 16);
+    Driver::bindIntParam(tStmt, quantity, 17);
+    Driver::bindDecParam(tStmt, extendedprice, 18);
+    Driver::bindIntParam(tStmt, discount, 19);
+    Driver::bindDecParam(tStmt, revenue, 20);
+    Driver::bindDecParam(tStmt, supplycost, 21);
+    Driver::bindIntParam(tStmt, tax, 22);
+    Driver::bindCharParam(tStmt, shipm, 10, 23);
     while(ret != 0){
-        auto full_sql = SQLDialect::transactionalQueries[UserInput::getdbChoice()][0];
-        ret           = Driver::executeStmtDiar(GetTransactionStmt(), full_sql.c_str(), __PRETTY_FUNCTION__);
-        if (ret != 0)
-        {
-            cout << __PRETTY_FUNCTION__ << ":ret=" << ret << ", sql=" << full_sql << endl;
+      std::string full_sql = string(
+          SQLDialect::pgTransactionalQueries[0]);
+      ret =
+          Driver::executeStmtDiar(tStmt, full_sql.c_str(), __PRETTY_FUNCTION__);
+      if (ret != 0) {
+        cout << __PRETTY_FUNCTION__ << ":ret=" << ret << ", sql=" << full_sql
+             << endl;
         }
     }
-    Driver::freeStmtHandle(GetTransactionStmt());
+    Driver::freeStmtHandle(tStmt);
     if (ret == 0) return 1;
     else return 0;
 }
@@ -347,23 +364,27 @@ int TransactionalClient::PaymentTransactionSP(SQLHDBC& dbc){
     // must be lower case, or pg's stored procedure will raise error
     string table = "freshness" + to_string(client_num);
     char * tableName = const_cast<char *>(table.c_str());
-    SQLAllocHandle(SQL_HANDLE_STMT, dbc, &GetTransactionStmt());
-    Driver::bindIntParam(GetTransactionStmt(), custkey, 1);
-    Driver::bindIntParam(GetTransactionStmt(), suppkey, 2);
-    Driver::bindDecParam(GetTransactionStmt(), payAmount, 3);  
-    Driver::bindIntParam(GetTransactionStmt(), GetLoOrderKey(), 4);  
-    Driver::bindCharParam(GetTransactionStmt(), tableName, 0, 5);
-    Driver::bindIntParam(GetTransactionStmt(), txn_num, 6);
+    SQLHSTMT tStmt;
+    Driver::createStmt(dbc, tStmt);
+    // SQLAllocHandle(SQL_HANDLE_STMT, dbc, &tStmt);
+    Driver::bindIntParam(tStmt, custkey, 1);
+    Driver::bindIntParam(tStmt, suppkey, 2);
+    Driver::bindDecParam(tStmt, payAmount, 3);  
+    Driver::bindIntParam(tStmt, GetLoOrderKey(), 4);  
+    Driver::bindCharParam(tStmt, tableName, 0, 5);
+    Driver::bindIntParam(tStmt, txn_num, 6);
     [[maybe_unused]] int ret = -1;
-    while(ret != 0){
-        auto full_sql = SQLDialect::transactionalQueries[UserInput::getdbChoice()][1];
-        ret           = Driver::executeStmtDiar(GetTransactionStmt(), full_sql.c_str(), __PRETTY_FUNCTION__);
-        if (ret != 0)
-        {
-            cout << __PRETTY_FUNCTION__ << ":ret=" << ret << ", sql=" << full_sql << endl;
-        }
-    }	
-    Driver::freeStmtHandle(GetTransactionStmt());
+    while (ret != 0) {
+      std::string full_sql =
+          string(SQLDialect::pgTransactionalQueries[1]);
+      ret = Driver::executeStmtDiar(tStmt, full_sql.c_str(),
+                                    __PRETTY_FUNCTION__);
+      if (ret != 0) {
+        cout << __PRETTY_FUNCTION__ << ":ret=" << ret << ", sql=" << full_sql
+             << endl;
+      }
+    }
+    Driver::freeStmtHandle(tStmt);
     if (ret == 0) return 1;
     else return 0;
 }
@@ -417,19 +438,22 @@ int TransactionalClient::CountOrdersTransactionSP(SQLHDBC& dbc){
     // must be lower case, or pg's stored procedure will raise error
     string table = "freshness" + to_string(client_num);
     char * tableName = const_cast<char *>(table.c_str());
-    SQLAllocHandle(SQL_HANDLE_STMT, dbc, &GetTransactionStmt());
-    Driver::bindCharParam(GetTransactionStmt(), c_name, 26, 1);
-    Driver::bindCharParam(GetTransactionStmt(), tableName, 0, 2);
-    Driver::bindIntParam(GetTransactionStmt(), txn_num, 3);
+    SQLHSTMT tStmt;
+    Driver::createStmt(dbc, tStmt);
+    // SQLAllocHandle(SQL_HANDLE_STMT, dbc, &tStmt);
+    Driver::bindCharParam(tStmt, c_name, 26, 1);
+    Driver::bindCharParam(tStmt, tableName, 0, 2);
+    Driver::bindIntParam(tStmt, txn_num, 3);
     while(ret != 0){
-        auto full_sql = SQLDialect::transactionalQueries[UserInput::getdbChoice()][2];
-        ret           = Driver::executeStmtDiar(GetTransactionStmt(), full_sql.c_str(), __PRETTY_FUNCTION__);
-        if (ret != 0)
-        {
-            cout << __PRETTY_FUNCTION__ << ":ret=" << ret << ", sql=" << full_sql << endl;
+      std::string full_sql = string(SQLDialect::pgTransactionalQueries[2]);
+      ret = Driver::executeStmtDiar(tStmt, full_sql.c_str(),
+                                    __PRETTY_FUNCTION__);
+      if (ret != 0) {
+        cout << __PRETTY_FUNCTION__ << ":ret=" << ret << ", sql=" << full_sql
+             << endl;
         }
     }	
-    Driver::freeStmtHandle(GetTransactionStmt());
+    Driver::freeStmtHandle(tStmt);
     if (ret == 0) return 1;
     else return 0;
 }
@@ -467,9 +491,9 @@ void TransactionalClient::CountOrdersTransaction(SQLHDBC& dbc){
     Driver::endOfTransaction(dbc);
 }
 
-SQLHSTMT& TransactionalClient::GetTransactionStmt(){
-    return tStmt;
-}
+// SQLHSTMT& TransactionalClient::GetTransactionStmt(){
+//     return tStmt;
+// }
 
 SQLHSTMT& TransactionalClient::GetTransactionPrepStmt(int idx){
     return ptStmt[idx];

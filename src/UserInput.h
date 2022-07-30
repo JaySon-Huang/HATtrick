@@ -62,8 +62,8 @@ class UserInput{
         static int getWarmUpDuration();
 	    static string getDelimiter();
 	    static void processUserIn(int argc, char* argv[]);
-	    static database& getdbChoice();
-		static exectype& getExecType();
+	    static database getdbChoice();
+		static exectype getExecType();
 };
 #endif
 

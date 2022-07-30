@@ -862,7 +862,7 @@ vector<string> SQLDialect::populateFreshnessTableStmt = {
 	       	" SET TIFLASH REPLICA 1;"
 };
 
-vector<vector<string>> SQLDialect::transactionalQueries = {
+const vector<vector<string_view>> SQLDialect::transactionalQueries = {
         {  //Postgres         
                 // New order transaction's commands
                 "SELECT HAT.NEWORDER(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
@@ -927,7 +927,7 @@ vector<string> SQLDialect::freshnessCommands = {
     " SET F_TXNNUM = ? WHERE F_CLIENTNUM = ?"
 };
 
-vector<string> SQLDialect::analyticalQueries = {     // 13 SSB Benchmark queries
+const vector<string> SQLDialect::analyticalQueries = {     // 13 SSB Benchmark queries
     // Q1 / Q1.1
     "SELECT SUM(LO_EXTENDEDPRICE*LO_DISCOUNT) AS REVENUE\n"
     "   FROM HAT.LINEORDER, HAT.DATE\n"

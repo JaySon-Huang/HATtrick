@@ -115,6 +115,7 @@ int main(int argc, char* argv[]){
         auto startTime = chrono::system_clock::to_time_t(chrono::system_clock::now());
         cout << "\nChoice: [4] Run Benchmark with tc=" << tc << ", ac=" << ac << endl;
         cout << "START TIME of [4] " << ctime(&startTime) << endl;
+        cout << "ffffff:" << SQLDialect::transactionalQueries[UserInput::getdbChoice()][0] << endl;
         SQLHENV env = 0;
         Driver::setEnv(env);
         auto g = std::make_unique<Globals>();

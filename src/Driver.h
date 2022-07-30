@@ -12,6 +12,7 @@ class Driver{
         static void setEnv(SQLHENV& env);
         static void connectDB(SQLHENV& env, SQLHDBC& dbc);
         static void connectDB2(SQLHENV& env, SQLHDBC& dbc);
+        static void createStmt(SQLHDBC dbc, SQLHSTMT &stmt);
         static int executeStmtDiar(SQLHSTMT& stmt, const char* query, const char *WHO);
         static int executeStmt(SQLHSTMT& stmt);
         static void bindCharColumn(SQLHSTMT& stmt, char* colBuf, int size,  int colNum);
@@ -33,6 +34,8 @@ class Driver{
         static void getDoubleData(SQLHSTMT& stmt, int col, double& dataBuf);
         static void autoCommitOff(SQLHDBC& dbc);
         static void endOfTransaction(SQLHDBC& dbc);
+
+        static std::mutex mu;
 };
 #endif
 

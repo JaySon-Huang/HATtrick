@@ -13,11 +13,11 @@ enum runType{none, warmup, testing};
 class Globals{
 public:
     Globals();
-    int freshnessPeriod = 0;
+    atomic<int> freshnessPeriod = 0;
     time_t epoch_time;    // global epoch time use by T and A. 
     atomic<int> loOrderKey{0};
     //atomic<int> txnNum{0};
-    runType typeOfRun;
+    std::atomic<runType> typeOfRun;
     Barrier* barrierW;
     Barrier* barrierT;
     vector<LinkedList*> containers;  // containers in which each tran. clients saves the mapping of the commit_time and txn_num

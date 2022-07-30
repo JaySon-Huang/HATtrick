@@ -1,9 +1,11 @@
-CC=g++
-#CC=clang++
+#CC=g++
+CC=clang++
 
-CXXFLAGS=-c -std=c++2a -Wall -Werror \
-	-g -O2 -DNDEBUG # release mode
-LDFLAGS=-lodbc -pthread
+#CXXFLAGS=-c -std=c++2a -Wall -Werror \
+#	-g -O2 -DNDEBUG # release mode
+CXXFLAGS=-c -std=c++2a -Wall -g -fsanitize=thread -O0
+
+LDFLAGS=-lodbc -pthread -fsanitize=thread
 SRCS= src/DataGen.cpp src/DataSrc.cpp src/UserInput.cpp src/Driver.cpp \
 	src/DBInit.cpp src/SQLDialect.cpp src/Barrier.cpp src/AnalyticalClient.cpp \
 	src/TransactionalClient.cpp src/Workload.cpp src/Globals.cpp \

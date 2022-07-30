@@ -1,6 +1,9 @@
 #include "Driver.h"
 #include "UserInput.h"
+#include <mutex>
 using namespace std;
+
+std::mutex Driver::mu;
 
 void Driver::extract_error(const char* fn, SQLHANDLE& handle, SQLSMALLINT type){
     SQLINTEGER i = 0;
@@ -23,15 +26,22 @@ void Driver::extract_error(const char* fn, SQLHANDLE& handle, SQLSMALLINT type){
 }
 
 void Driver::setEnv(SQLHENV& env){
-    SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
-    SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (SQLPOINTER) SQL_OV_ODBC3, 0);
+  std::unique_lock lock(mu);
+  SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
+  SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (SQLPOINTER) SQL_OV_ODBC3, 0);
+}
+
+void Driver::createStmt(SQLHDBC dbc, SQLHSTMT &stmt) {
+  std::unique_lock lock(mu);
+  SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 }
 
 void Driver::connectDB(SQLHENV& env, SQLHDBC& dbc){
+    std::unique_lock lock(mu);
     SQLAllocHandle(SQL_HANDLE_DBC, env, &dbc);
-    const char * dsn_to_connect = UserInput::getDSN().c_str();
+    std::string dsn_to_connect = UserInput::getDSN();
     cout << "connectDB connecting to " << dsn_to_connect << endl;
-    SQLRETURN ret = SQLConnect(dbc, (SQLCHAR*) dsn_to_connect, SQL_NTS, (SQLCHAR*) \
+    SQLRETURN ret = SQLConnect(dbc, (SQLCHAR*) dsn_to_connect.c_str(), SQL_NTS, (SQLCHAR*) \
       UserInput::getDBUser().c_str(), SQL_NTS, (SQLCHAR*) UserInput::getDBPwd().c_str(), SQL_NTS);
     if (ret == SQL_SUCCESS_WITH_INFO) {
         printf("Driver reported the following diagnostics\n");
@@ -46,15 +56,16 @@ void Driver::connectDB(SQLHENV& env, SQLHDBC& dbc){
 }
 
 void Driver::connectDB2(SQLHENV& env, SQLHDBC& dbc){ // For Postgres streaming replication connection to standby
+    std::unique_lock lock(mu);
     SQLAllocHandle(SQL_HANDLE_DBC, env, &dbc);
-    const char * dsn_to_connect = nullptr;
+    std::string dsn_to_connect;
     if (!UserInput::getDSN2().empty()) {
-      dsn_to_connect = UserInput::getDSN2().c_str();
+      dsn_to_connect = UserInput::getDSN2();
     } else {
-      dsn_to_connect = UserInput::getDSN().c_str();
+      dsn_to_connect = UserInput::getDSN();
     }
     cout << "connectDB2 connecting to " << dsn_to_connect << endl;
-    SQLRETURN ret = SQLConnect(dbc, (SQLCHAR*) dsn_to_connect, SQL_NTS, (SQLCHAR*) \
+    SQLRETURN ret = SQLConnect(dbc, (SQLCHAR*) dsn_to_connect.c_str(), SQL_NTS, (SQLCHAR*) \
       UserInput::getDBUser().c_str(), SQL_NTS, (SQLCHAR*) UserInput::getDBPwd().c_str(), SQL_NTS);
     if (ret == SQL_SUCCESS_WITH_INFO) {
         printf("Driver reported the following diagnostics\n");

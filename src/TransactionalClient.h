@@ -17,7 +17,7 @@ class TransactionalClient{
 private:
     thread::id threadNum;           // id of thread
     int loOrderKey;                 // current lo_orderkey
-    SQLHSTMT tStmt = 0;             // for stored procedures
+    // SQLHSTMT tStmt = 0;             // for stored procedures
     vector<SQLHSTMT> ptStmt = {vector<SQLHSTMT>(SQLDialect::transactionalCommands.size(), 0)}; // for prepared statements 
     SQLHSTMT freshStmt = 0;
     int clientNum = 0;              
@@ -33,7 +33,7 @@ public:
     void PaymentTransaction(SQLHDBC& dbc);      // Payment txn w/ prepared statements, same for all DBs
     int CountOrdersTransactionSP(SQLHDBC& dbc); // CountOrders txn w/ stored procedures, same for PostgreSQL and SQL Server
     void CountOrdersTransaction(SQLHDBC& dbc);   // CountOrders txn w/ prepared statements, same for all DBs
-    SQLHSTMT& GetTransactionStmt();
+    // SQLHSTMT& GetTransactionStmt();
     SQLHSTMT& GetTransactionPrepStmt(int idx);  
     void FreeTransactionStmt();
     void SetLoOrderKey(int& num);

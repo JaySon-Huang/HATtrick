@@ -10,6 +10,7 @@
 #include <sstream>
 #include <iostream>
 #include <math.h>
+#include <string_view>
 
 using namespace std;
 
@@ -31,9 +32,11 @@ class DataSrc{
 		static const vector<string> partName;
 		static const vector<string> partContainer;
 		static const vector<string> partType;
-		static const vector<string> ordPriority;
-		static const vector<string> shipMode;
-  		static mt19937 mt;
+                static constexpr string_view ordPriority[] = {
+                    "1-URGENT", "2-HIGH", "3-MEDIUM", "4-NOT SPECIFIED",
+                    "5-LOW"};
+                static const vector<string> shipMode;
+  		static thread_local mt19937 mt;
 		static vector<double> price;
 	    static vector<string> c_phone;
         static vector<string> s_phone;
