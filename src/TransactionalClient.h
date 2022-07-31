@@ -25,6 +25,7 @@ private:
     int localCounter = 0;           // local counter of the transactions that the current client is running 
 public:
     TransactionalClient();
+    ~TransactionalClient();
     void PrepareTransactionStmt(SQLHDBC& dbc);
     int NewOrderTransactionPS(SQLHDBC& dbc);   // NewOrder txn w/ store procedures for PostgreSQL
     int  NewOrderTransactionSS(SQLHDBC& dbc);   // NewOrder txn w/ stored procedures for SQL Server

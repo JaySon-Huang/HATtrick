@@ -21,6 +21,8 @@ class Driver{
         static void bindIntParam(SQLHSTMT& stmt, int& param, int pos);
         static void bindDecParam(SQLHSTMT& stmt, double& param, int pos);
         static void resetStmt(SQLHSTMT& stmt);
+        static void closeStmtCursor(SQLHSTMT & stmt);
+        static void resetStmtParams(SQLHSTMT & stmt);
         static void prepareStmt(SQLHDBC& dbc, SQLHSTMT& stmt, const char* query);
         static void allocHandle(SQLHDBC& dbc, SQLHSTMT& stmt);
         static void freeStmtHandle(SQLHSTMT& stmt);

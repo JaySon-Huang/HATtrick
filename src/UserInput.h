@@ -43,6 +43,8 @@ class UserInput{
 		static int analInputClients;
 		static int tranInputClients;
 
+		static int resetAfterExec;
+
         static const int getBatchSize();
 	    static const int getSF();
 	    static const int getCustSize();

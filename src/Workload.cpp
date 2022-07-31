@@ -2,6 +2,19 @@
 #include "Workload.h"
 
 Workload::Workload() {}
+Workload::~Workload() {
+    for (int i = 0; i < UserInput::getAnalClients(); i++)
+    {
+        delete aClients[i];
+        aClients[i] = nullptr;
+    }
+
+    for (int i = 0; i < UserInput::getTranClients(); i++)
+    {
+        delete tClients[i];
+        tClients[i] = nullptr;
+    }
+}
 
 bool Workload::runTime(chrono::steady_clock::time_point& startTime, int duration){
     if(duration_cast<seconds>(steady_clock::now() - startTime).count() <= duration)

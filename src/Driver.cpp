@@ -247,6 +247,39 @@ void Driver::bindDecParam(SQLHSTMT& stmt, double& param, int pos){
     }
 }
 
+void Driver::closeStmtCursor(SQLHSTMT & stmt){
+    /* Only reset params for prepared statement */
+    SQLRETURN reset = SQLCloseCursor(stmt);
+    if (reset == SQL_SUCCESS){
+      return;
+    }
+    if(reset == SQL_SUCCESS_WITH_INFO){
+        printf("Driver reported the following diagnostics\n");
+        extract_error("SQLFreeStmt.", stmt, SQL_HANDLE_STMT);
+    }
+    else{
+      fprintf(stderr, "\nFailed to execute the reset stmt!\n\n");
+      extract_error("SQLFreeStmt", stmt, SQL_HANDLE_STMT);
+    }
+}
+
+void Driver::resetStmtParams(SQLHSTMT &stmt) {
+    /* Only reset params for prepared statement */
+    SQLRETURN reset = SQLFreeStmt(stmt, SQL_RESET_PARAMS);
+    if (reset == SQL_SUCCESS)
+      return;
+    if(reset == SQL_SUCCESS_WITH_INFO){
+        printf("Driver reported the following diagnostics\n");
+        extract_error("SQLFreeStmt.", stmt, SQL_HANDLE_STMT);
+        exit(1);
+    }
+    else{
+      fprintf(stderr, "\nFailed to execute the reset stmt!\n\n");
+      extract_error("SQLFreeStmt", stmt, SQL_HANDLE_STMT);
+      exit(1);
+    }
+}
+
 void Driver::resetStmt(SQLHSTMT& stmt){
     /* Free handles, frees all resources.*/
     SQLRETURN close = SQLFreeStmt(stmt, SQL_CLOSE);

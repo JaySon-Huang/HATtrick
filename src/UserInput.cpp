@@ -1,5 +1,6 @@
 
 #include "UserInput.h"
+#include <cstdlib>
 
 const int UserInput::BATCH_SIZE = 64;
 const int UserInput::SF=1;  
@@ -27,8 +28,10 @@ int      UserInput::analMinClients = 1;
 int      UserInput::tranMinClients = 1;
 int      UserInput::analInputClients = 0;
 int      UserInput::tranInputClients = 0;
+int      UserInput::resetAfterExec   = 1;
 
-const int UserInput::getBatchSize(){
+const int UserInput::getBatchSize()
+{
     return UserInput::BATCH_SIZE;
 }
 
@@ -233,6 +236,10 @@ void UserInput::processUserIn(int argc, char* argv[]){
                         UserInput::analInputClients = atoi(argv[i+1]);
                     } else if (strcmp(argv[i], "-max_t") == 0) {
                         UserInput::tranInputClients = atoi(argv[i+1]);
+                    }
+                    else if (strcmp(argv[i], "-reset") == 0) {
+                        UserInput::resetAfterExec = atoi(argv[i+1]);
+                        cout << "resetAfterExec is set to " << UserInput::resetAfterExec << endl;
                     }
             }
             found = 0;

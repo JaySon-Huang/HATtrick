@@ -1,8 +1,25 @@
 
 #include "TransactionalClient.h"
 #include <string>
+#include "Driver.h"
+#include "SQLDialect.h"
+#include "UserInput.h"
 
 TransactionalClient::TransactionalClient(){}
+TransactionalClient::~TransactionalClient()
+{
+    if (UserInput::resetAfterExec)
+    {
+        cout << "the txn prep stmt is reset after exec" << endl;
+    }
+    else
+    {
+        cout << "the txn prep stmt is reset after all finished" << endl;
+    }
+    for (unsigned int i=0; i < SQLDialect::transactionalCommands.size(); i++) {
+        Driver::resetStmt(GetTransactionPrepStmt(i));
+    }
+}
 
 void TransactionalClient::PrepareTransactionStmt(SQLHDBC &dbc){
     for(unsigned int i=0; i<SQLDialect::transactionalCommands.size(); i++){
@@ -235,7 +252,12 @@ void TransactionalClient::NewOrderTransaction(SQLHDBC& dbc){
     Driver::executeStmt(GetTransactionPrepStmt(0));
     Driver::fetchData(GetTransactionPrepStmt(0));
     Driver::getIntData(GetTransactionPrepStmt(0), 1, custkey);
-    Driver::resetStmt(GetTransactionPrepStmt(0));
+    if (UserInput::resetAfterExec)
+    {
+        // Driver::resetStmt(GetTransactionPrepStmt(0));
+        Driver::closeStmtCursor(GetTransactionPrepStmt(0));
+        Driver::resetStmtParams(GetTransactionPrepStmt(0));
+    }
 
     // Choose a random number for the # of parts of the order.
     int numOrders = DataSrc::uniformIntDist(1, 7);
@@ -256,7 +278,12 @@ void TransactionalClient::NewOrderTransaction(SQLHDBC& dbc){
         Driver::fetchData(GetTransactionPrepStmt(1));
         p_price = 0;
         Driver::getDoubleData(GetTransactionPrepStmt(1), 1, p_price);
-        Driver::resetStmt(GetTransactionPrepStmt(1));
+        if (UserInput::resetAfterExec)
+        {
+            // Driver::resetStmt(GetTransactionPrepStmt(1));
+            Driver::closeStmtCursor(GetTransactionPrepStmt(1));
+            Driver::resetStmtParams(GetTransactionPrepStmt(1));
+        }
 
         // Get random supplier key SUPPKEY.
         int suppkey = DataSrc::uniformIntDist(1, UserInput::getSuppSize());
@@ -269,7 +296,12 @@ void TransactionalClient::NewOrderTransaction(SQLHDBC& dbc){
         Driver::executeStmt(GetTransactionPrepStmt(2));
         Driver::fetchData(GetTransactionPrepStmt(2));
         Driver::getIntData(GetTransactionPrepStmt(2), 1, suppkey);
-        Driver::resetStmt(GetTransactionPrepStmt(2));
+        if (UserInput::resetAfterExec)
+        {
+            // Driver::resetStmt(GetTransactionPrepStmt(2));
+            Driver::closeStmtCursor(GetTransactionPrepStmt(2));
+            Driver::resetStmtParams(GetTransactionPrepStmt(2));
+        }
 
         //For a random DATE get the DATEKEY.
         choice = DataSrc::uniformIntDist(1, 12);
@@ -281,7 +313,12 @@ void TransactionalClient::NewOrderTransaction(SQLHDBC& dbc){
         Driver::fetchData(GetTransactionPrepStmt(3));
         datekey = 0;
         Driver::getIntData(GetTransactionPrepStmt(3), 1, datekey);
-        Driver::resetStmt(GetTransactionPrepStmt(3));
+        if (UserInput::resetAfterExec)
+        {
+            // Driver::resetStmt(GetTransactionPrepStmt(3));
+            Driver::closeStmtCursor(GetTransactionPrepStmt(3));
+            Driver::resetStmtParams(GetTransactionPrepStmt(3));
+        }
         // Create the other data of the current lineorder randomly.
         ordpriority             = DataSrc::getOrdPriority(DataSrc::uniformIntDist(0, 4));
         char * ord              = &ordpriority[0];
@@ -316,7 +353,12 @@ void TransactionalClient::NewOrderTransaction(SQLHDBC& dbc){
         Driver::bindIntParam(GetTransactionPrepStmt(4), datekey, 15);
         Driver::bindCharParam(GetTransactionPrepStmt(4), shipm, 10, 16);
         Driver::executeStmt(GetTransactionPrepStmt(4));
-        Driver::resetStmt(GetTransactionPrepStmt(4));
+        if (UserInput::resetAfterExec)
+        {
+            // Driver::resetStmt(GetTransactionPrepStmt(4));
+            Driver::closeStmtCursor(GetTransactionPrepStmt(4));
+            Driver::resetStmtParams(GetTransactionPrepStmt(4));
+        }
         // End of transaction.
     }
     // Update Freshness table.
@@ -371,18 +413,33 @@ void TransactionalClient::PaymentTransaction(SQLHDBC& dbc){
     // Update in customer's table.
     Driver::bindIntParam(GetTransactionPrepStmt(6), custkey, 1);
     Driver::executeStmt(GetTransactionPrepStmt(6));
-    Driver::resetStmt(GetTransactionPrepStmt(6));
+    if (UserInput::resetAfterExec)
+    {
+        //Driver::resetStmt(GetTransactionPrepStmt(6));
+        Driver::closeStmtCursor(GetTransactionPrepStmt(6));
+        Driver::resetStmtParams(GetTransactionPrepStmt(6));
+    }
     // Update in supplier's table.
     Driver::bindDecParam(GetTransactionPrepStmt(7), payAmount, 1);
     Driver::bindIntParam(GetTransactionPrepStmt(7), suppkey, 2);
     Driver::executeStmt(GetTransactionPrepStmt(7));
-    Driver::resetStmt(GetTransactionPrepStmt(7));
+    if (UserInput::resetAfterExec)
+    {
+        // Driver::resetStmt(GetTransactionPrepStmt(7));
+        Driver::closeStmtCursor(GetTransactionPrepStmt(7));
+        Driver::resetStmtParams(GetTransactionPrepStmt(7));
+    }
     // Insertion in History table.
     Driver::bindIntParam(GetTransactionPrepStmt(8), GetLoOrderKey(), 1);
     Driver::bindIntParam(GetTransactionPrepStmt(8), custkey, 2);
     Driver::bindDecParam(GetTransactionPrepStmt(8), payAmount, 3);
     Driver::executeStmt(GetTransactionPrepStmt(8));
-    Driver::resetStmt(GetTransactionPrepStmt(8));
+    if (UserInput::resetAfterExec)
+    {
+        //Driver::resetStmt(GetTransactionPrepStmt(8));
+        Driver::closeStmtCursor(GetTransactionPrepStmt(8));
+        Driver::resetStmtParams(GetTransactionPrepStmt(8));
+    }
     // Update Freshness table.
     Driver::bindIntParam(GetFreshnessStmt(), txn_num, 1);
     Driver::bindIntParam(GetFreshnessStmt(), client_num, 2);
@@ -430,13 +487,23 @@ void TransactionalClient::CountOrdersTransaction(SQLHDBC& dbc){
     Driver::executeStmt(GetTransactionPrepStmt(0));
     Driver::fetchData(GetTransactionPrepStmt(0));
     Driver::getIntData(GetTransactionPrepStmt(0), 1, custkey);
-    Driver::resetStmt(GetTransactionPrepStmt(0));
+    if (UserInput::resetAfterExec)
+    {
+        //Driver::resetStmt(GetTransactionPrepStmt(0));
+        Driver::closeStmtCursor(GetTransactionPrepStmt(0));
+        Driver::resetStmtParams(GetTransactionPrepStmt(0));
+    }
     // Transaction starts.
     // Set auto commit off, all the commands will commit at the end of the transaction command.
     Driver::bindIntParam(GetTransactionPrepStmt(9), custkey, 1);
     Driver::executeStmt(GetTransactionPrepStmt(9));
     Driver::fetchData(GetTransactionPrepStmt(9));
-    Driver::resetStmt(GetTransactionPrepStmt(9));
+    if (UserInput::resetAfterExec)
+    {
+        //Driver::resetStmt(GetTransactionPrepStmt(9));
+        Driver::closeStmtCursor(GetTransactionPrepStmt(9));
+        Driver::resetStmtParams(GetTransactionPrepStmt(9));
+    }
     [[maybe_unused]] int count = 0;
     // Update Freshness table.
     std::string s_tc;

@@ -32,6 +32,7 @@ private:
     vector<TransactionalClient*> tClients;
 public:
     Workload();
+    ~Workload();
     static bool runTime(chrono::steady_clock::time_point& startTime, int duration);
     static void AnalyticalStream(AnalyticalClient* aClient, Globals* g);
     static void TransactionalStreamPS(TransactionalClient* tClient, Globals* g, SQLHDBC& dbc);  // for Prepared Statements
