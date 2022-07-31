@@ -21,7 +21,8 @@ class UserInput{
         static const int loSize;            // size of the generated LineOrder table
 	    static string dataPath;             // path of the generated data
 	    static string dsn;                  // data source name
-	    static string dsn2;
+	    static string dsn2;					// data source name. AP run on this if set.
+	    static string dsn3;					// data source name. For Scaling the TP workload.
 	    static string dbUser;               // database user name
 	    static string dbPwd;                // database password
         static int work;                    // (-h/--help) 0, generation of data (-gen) 1, run benchmark (-run) 2
@@ -50,6 +51,7 @@ class UserInput{
         static string getDataPath();
         static const string &getDSN();
 		static const string &getDSN2();
+		static const string &getDSN3();
         static string getDBUser();
         static string getDBPwd();
 	    static int getWork();

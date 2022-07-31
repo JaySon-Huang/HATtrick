@@ -9,7 +9,8 @@ const int UserInput::partSize =  200000 * static_cast <int>(floor(1+log2(UserInp
 const int UserInput::loSize =    1500000 * UserInput::SF;
 string UserInput::dataPath;
 string UserInput::dsn;
-string UserInput::dsn2;
+string UserInput::dsn2; // for ap connect
+string UserInput::dsn3; // for multiple tp connect
 string UserInput::dbUser;
 string UserInput::dbPwd;
 int UserInput::work;
@@ -60,6 +61,10 @@ const string &UserInput::getDSN(){
 
 const string &UserInput::getDSN2(){
     return UserInput::dsn2;
+}
+
+const string &UserInput::getDSN3(){
+    return UserInput::dsn3;
 }
 
 string UserInput::getDBUser(){
@@ -203,6 +208,7 @@ void UserInput::processUserIn(int argc, char* argv[]){
             for(int i=0; i<argc; i++){
                     if     (strcmp(argv[i], "-dsn") == 0 )   UserInput::dsn = string(argv[i+1]);
                     else if(strcmp(argv[i], "-dsn2") == 0 )  UserInput::dsn2 = string(argv[i+1]);
+                    else if(strcmp(argv[i], "-dsn3") == 0 )  UserInput::dsn3 = string(argv[i+1]);
                     else if(strcmp(argv[i], "-usr") == 0 )  UserInput::dbUser = string(argv[i+1]);
                     else if(strcmp(argv[i], "-pwd") == 0 )  UserInput::dbPwd = string(argv[i+1]);
                     else if(strcmp(argv[i], "-wd") == 0 )  UserInput::warmUpDuration = atoi(argv[i+1]);
@@ -233,6 +239,7 @@ void UserInput::processUserIn(int argc, char* argv[]){
             for(int i=0; i<argc; i++){
                     if(strcmp(argv[i], "-dsn") == 0 )  UserInput::dsn = string(argv[i+1]);
 		            else if(strcmp(argv[i], "-dsn2") == 0 )  UserInput::dsn2 = string(argv[i+1]);
+                    else if(strcmp(argv[i], "-dsn3") == 0 )  UserInput::dsn3 = string(argv[i+1]);
                     else if(strcmp(argv[i], "-usr") == 0 )  UserInput::dbUser = string(argv[i+1]);
                     else if(strcmp(argv[i], "-pwd") == 0 )  UserInput::dbPwd = string(argv[i+1]);
                     else if(strcmp(argv[i], "-ac") == 0 )  UserInput::analClients = atoi(argv[i+1]);
