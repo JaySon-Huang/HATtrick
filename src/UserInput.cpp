@@ -11,6 +11,7 @@ string UserInput::dataPath;
 string UserInput::dsn;
 string UserInput::dsn2; // for ap connect
 string UserInput::dsn3; // for multiple tp connect
+string UserInput::dsn4; // for multiple tp connect
 string UserInput::dbUser;
 string UserInput::dbPwd;
 int UserInput::work;
@@ -209,6 +210,7 @@ void UserInput::processUserIn(int argc, char* argv[]){
                     if     (strcmp(argv[i], "-dsn") == 0 )   UserInput::dsn = string(argv[i+1]);
                     else if(strcmp(argv[i], "-dsn2") == 0 )  UserInput::dsn2 = string(argv[i+1]);
                     else if(strcmp(argv[i], "-dsn3") == 0 )  UserInput::dsn3 = string(argv[i+1]);
+                    else if(strcmp(argv[i], "-dsn4") == 0 )  UserInput::dsn4 = string(argv[i+1]);
                     else if(strcmp(argv[i], "-usr") == 0 )  UserInput::dbUser = string(argv[i+1]);
                     else if(strcmp(argv[i], "-pwd") == 0 )  UserInput::dbPwd = string(argv[i+1]);
                     else if(strcmp(argv[i], "-wd") == 0 )  UserInput::warmUpDuration = atoi(argv[i+1]);

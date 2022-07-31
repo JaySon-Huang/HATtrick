@@ -4,3 +4,6 @@
 HATtrickBench
 src/*.o
 
+*.log
+results
+results*
