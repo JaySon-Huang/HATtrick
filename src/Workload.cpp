@@ -49,18 +49,22 @@ void Workload::AnalyticalStream(AnalyticalClient* aClient, Globals* g){
 }
 
 void Workload::TransactionalStreamPS(TransactionalClient* tClient, Globals* g, SQLHDBC& dbc){
-    int p;
-    int loOrderKey;
-    chrono::steady_clock::time_point startTime;
-    chrono::high_resolution_clock::time_point  execTimeStart;
+    int                                       p;
+    int                                       loOrderKey;
+    chrono::steady_clock::time_point          startTime;
+    chrono::high_resolution_clock::time_point execTimeStart;
     cout << "You chose PREPARED STATEMENTS" << endl;
-    long  latency, commitTime;
-    if(UserInput::getdbChoice() == tidb){
-        if(g->typeOfRun == warmup) {
+    long latency, commitTime;
+    if (UserInput::getdbChoice() == tidb)
+    {
+        if (g->typeOfRun == warmup)
+        {
             startTime = chrono::steady_clock::now();
-            while (runTime(startTime, UserInput::getWarmUpDuration())==true) {
+            while (runTime(startTime, UserInput::getWarmUpDuration()) == true)
+            {
                 p = DataSrc::uniformIntDist(1, 100);
-                if (p <= 96) {
+                if (p <= 96)
+                {
                     loOrderKey = g->getLoOrderKey();
                     tClient->SetLoOrderKey(loOrderKey);
                     tClient->NewOrderTransaction(dbc);
@@ -70,113 +74,133 @@ void Workload::TransactionalStreamPS(TransactionalClient* tClient, Globals* g, S
                     tClient->CountOrdersTransaction(dbc);
             }
         }
-        else if(g->typeOfRun == testing){
+        else if (g->typeOfRun == testing)
+        {
             startTime = chrono::steady_clock::now();
-            while (runTime(startTime, UserInput::getTestDuration())==true){
+            while (runTime(startTime, UserInput::getTestDuration()) == true)
+            {
                 p = DataSrc::uniformIntDist(1, 100);
-               if (p <= 96) {
+                if (p <= 96)
+                {
                     loOrderKey = g->getLoOrderKey();
                     tClient->SetLoOrderKey(loOrderKey);
-                    execTimeStart = chrono::high_resolution_clock::now();  // measure response time of the tran_type 1
+                    execTimeStart = chrono::high_resolution_clock::now(); // measure response time of the tran_type 1
                     tClient->NewOrderTransaction(dbc);
                     latency = chrono::duration_cast<chrono::nanoseconds>(chrono::high_resolution_clock::now() - execTimeStart).count();
                     tClient->SetLatency(latency, 1);
                     commitTime = duration_cast<chrono::nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
-                    g->containers[tClient->GetClientNum()-1]->Insert(tClient->GetLocalCounter(), commitTime);
+                    g->containers[tClient->GetClientNum() - 1]->Insert(tClient->GetLocalCounter(), commitTime);
                     tClient->IncrementLocalCounter();
-		    execTimeStart = chrono::high_resolution_clock::now();  // measure response time of the tran_type 1
+                    execTimeStart = chrono::high_resolution_clock::now(); // measure response time of the tran_type 1
                     tClient->PaymentTransaction(dbc);
                     latency = chrono::duration_cast<chrono::nanoseconds>(chrono::high_resolution_clock::now() - execTimeStart).count();
                     tClient->SetLatency(latency, 2);
                     commitTime = duration_cast<chrono::nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
-                    g->containers[tClient->GetClientNum()-1]->Insert(tClient->GetLocalCounter(), commitTime);
+                    g->containers[tClient->GetClientNum() - 1]->Insert(tClient->GetLocalCounter(), commitTime);
                     tClient->IncrementLocalCounter();
-                } else if (p > 96) {
-		    execTimeStart = chrono::high_resolution_clock::now();  // measure response time of the tran_type 1
+                }
+                else if (p > 96)
+                {
+                    execTimeStart = chrono::high_resolution_clock::now(); // measure response time of the tran_type 1
                     tClient->CountOrdersTransaction(dbc);
                     latency = chrono::duration_cast<chrono::nanoseconds>(chrono::high_resolution_clock::now() - execTimeStart).count();
                     tClient->SetLatency(latency, 3);
                     commitTime = duration_cast<chrono::nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
-                    g->containers[tClient->GetClientNum()-1]->Insert(tClient->GetLocalCounter(), commitTime);
+                    g->containers[tClient->GetClientNum() - 1]->Insert(tClient->GetLocalCounter(), commitTime);
                     tClient->IncrementLocalCounter();
-               }
-
+                }
             }
         }
-
-    }
-
+    } // end of tidb
 }
 
 void Workload::TransactionalStreamSP(TransactionalClient* tClient, Globals* g, SQLHDBC& dbc){
     int p;
     int loOrderKey;
     int ret_no, ret_p, ret_co;
-    chrono::steady_clock::time_point startTime;
-    chrono::high_resolution_clock::time_point  execTimeStart;
+    chrono::steady_clock::time_point          startTime;
+    chrono::high_resolution_clock::time_point execTimeStart;
     cout << "You chosed STORED PROCEDURES" << endl;
-    long  latency, commitTime;
-    if(UserInput::getdbChoice() == postgres){
-        if(g->typeOfRun == warmup) {
+    long latency, commitTime;
+    if (UserInput::getdbChoice() == postgres)
+    {
+        if (g->typeOfRun == warmup)
+        {
             startTime = chrono::steady_clock::now();
-            while (runTime(startTime, UserInput::getWarmUpDuration())==true) {
+            while (runTime(startTime, UserInput::getWarmUpDuration()) == true)
+            {
                 p = DataSrc::uniformIntDist(1, 100);
-                if (p <= 96) {
+                if (p <= 96)
+                {
                     loOrderKey = g->getLoOrderKey();
                     tClient->SetLoOrderKey(loOrderKey);
                     tClient->NewOrderTransactionPS(dbc);
                     tClient->PaymentTransactionSP(dbc);
                 }
-                else if (p > 96){
+                else if (p > 96)
+                {
                     tClient->CountOrdersTransactionSP(dbc);
-		}
-            }
-        }
-        else if(g->typeOfRun == testing){
-            startTime = chrono::steady_clock::now();
-            while (runTime(startTime, UserInput::getTestDuration())==true){
-                p = DataSrc::uniformIntDist(1, 100);
-                if (p <= 96) {
-                    loOrderKey = g->getLoOrderKey();
-                    tClient->SetLoOrderKey(loOrderKey);
-                    execTimeStart = chrono::high_resolution_clock::now();  // measure response time of the tran_type 1
-                    ret_no = tClient->NewOrderTransactionPS(dbc);
-                    latency = chrono::duration_cast<chrono::nanoseconds>(chrono::high_resolution_clock::now() - execTimeStart).count();
-                    if(ret_no == 1){
-                    	tClient->SetLatency(latency, 1);
-                    	commitTime = duration_cast<chrono::nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
-			g->containers[tClient->GetClientNum()-1]->Insert(tClient->GetLocalCounter(), commitTime);
-			tClient->IncrementLocalCounter();
-		    }
-                    execTimeStart = chrono::high_resolution_clock::now();;      // measure response time of the tran_type 2
-                    ret_p = tClient->PaymentTransactionSP(dbc);
-                    latency = chrono::duration_cast<chrono::nanoseconds>(chrono::high_resolution_clock::now() - execTimeStart).count();
-                    if(ret_p == 1){
-                        tClient->SetLatency(latency, 2);
-                        commitTime = duration_cast<chrono::nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
-                        g->containers[tClient->GetClientNum()-1]->Insert(tClient->GetLocalCounter(), commitTime);
-			tClient->IncrementLocalCounter();
-                    }
-                } else if (p > 96) {
-                    execTimeStart = chrono::high_resolution_clock::now();      // measure response time of the tran_type 3
-                    ret_co = tClient->CountOrdersTransactionSP(dbc);
-                    latency = chrono::duration_cast<chrono::nanoseconds>(chrono::high_resolution_clock::now() - execTimeStart).count();
-                    if(ret_co == 1){
-                        tClient->SetLatency(latency, 3);
-                        commitTime = duration_cast<chrono::nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
-                        g->containers[tClient->GetClientNum()-1]->Insert(tClient->GetLocalCounter(), commitTime);
-			tClient->IncrementLocalCounter();
-		   } 
                 }
             }
         }
-    }
-    else if(UserInput::getdbChoice() == systemx or UserInput::getdbChoice() == mysql){
-        if(g->typeOfRun == warmup) {
+        else if (g->typeOfRun == testing)
+        {
             startTime = chrono::steady_clock::now();
-            while (runTime(startTime, UserInput::getWarmUpDuration())==true) {
+            while (runTime(startTime, UserInput::getTestDuration()) == true)
+            {
                 p = DataSrc::uniformIntDist(1, 100);
-                if (p <= 96) {
+                if (p <= 96)
+                {
+                    loOrderKey = g->getLoOrderKey();
+                    tClient->SetLoOrderKey(loOrderKey);
+                    execTimeStart = chrono::high_resolution_clock::now(); // measure response time of the tran_type 1
+                    ret_no        = tClient->NewOrderTransactionPS(dbc);
+                    latency = chrono::duration_cast<chrono::nanoseconds>(chrono::high_resolution_clock::now() - execTimeStart).count();
+                    if (ret_no == 1)
+                    {
+                        tClient->SetLatency(latency, 1);
+                        commitTime = duration_cast<chrono::nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
+                        g->containers[tClient->GetClientNum() - 1]->Insert(tClient->GetLocalCounter(), commitTime);
+                        tClient->IncrementLocalCounter();
+                    }
+                    execTimeStart = chrono::high_resolution_clock::now();
+                    ; // measure response time of the tran_type 2
+                    ret_p   = tClient->PaymentTransactionSP(dbc);
+                    latency = chrono::duration_cast<chrono::nanoseconds>(chrono::high_resolution_clock::now() - execTimeStart).count();
+                    if (ret_p == 1)
+                    {
+                        tClient->SetLatency(latency, 2);
+                        commitTime = duration_cast<chrono::nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
+                        g->containers[tClient->GetClientNum() - 1]->Insert(tClient->GetLocalCounter(), commitTime);
+                        tClient->IncrementLocalCounter();
+                    }
+                }
+                else if (p > 96)
+                {
+                    execTimeStart = chrono::high_resolution_clock::now(); // measure response time of the tran_type 3
+                    ret_co        = tClient->CountOrdersTransactionSP(dbc);
+                    latency = chrono::duration_cast<chrono::nanoseconds>(chrono::high_resolution_clock::now() - execTimeStart).count();
+                    if (ret_co == 1)
+                    {
+                        tClient->SetLatency(latency, 3);
+                        commitTime = duration_cast<chrono::nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
+                        g->containers[tClient->GetClientNum() - 1]->Insert(tClient->GetLocalCounter(), commitTime);
+                        tClient->IncrementLocalCounter();
+                    }
+                }
+            }
+        }
+    } // end of pg
+    else if (UserInput::getdbChoice() == systemx or UserInput::getdbChoice() == mysql)
+    {
+        if (g->typeOfRun == warmup)
+        {
+            startTime = chrono::steady_clock::now();
+            while (runTime(startTime, UserInput::getWarmUpDuration()) == true)
+            {
+                p = DataSrc::uniformIntDist(1, 100);
+                if (p <= 96)
+                {
                     loOrderKey = g->getLoOrderKey();
                     tClient->SetLoOrderKey(loOrderKey);
                     tClient->NewOrderTransactionSS(dbc);
@@ -186,45 +210,54 @@ void Workload::TransactionalStreamSP(TransactionalClient* tClient, Globals* g, S
                     tClient->CountOrdersTransactionSP(dbc);
             }
         }
-        else if(g->typeOfRun == testing){
+        else if (g->typeOfRun == testing)
+        {
             startTime = chrono::steady_clock::now();
-            while (runTime(startTime, UserInput::getTestDuration())==true){
+            while (runTime(startTime, UserInput::getTestDuration()) == true)
+            {
                 p = DataSrc::uniformIntDist(1, 100);
-                if (p <= 96) {
+                if (p <= 96)
+                {
                     loOrderKey = g->getLoOrderKey();
                     tClient->SetLoOrderKey(loOrderKey);
-                    execTimeStart = chrono::high_resolution_clock::now();  // measure response time of the tran_type 1
-                    ret_no = tClient->NewOrderTransactionSS(dbc);
+                    execTimeStart = chrono::high_resolution_clock::now(); // measure response time of the tran_type 1
+                    ret_no        = tClient->NewOrderTransactionSS(dbc);
                     latency = chrono::duration_cast<chrono::nanoseconds>(chrono::high_resolution_clock::now() - execTimeStart).count();
-                    if(ret_no == 1){
+                    if (ret_no == 1)
+                    {
                         tClient->SetLatency(latency, 1);
                         commitTime = duration_cast<chrono::nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
-                        g->containers[tClient->GetClientNum()-1]->Insert(tClient->GetLocalCounter(), commitTime);
+                        g->containers[tClient->GetClientNum() - 1]->Insert(tClient->GetLocalCounter(), commitTime);
                         tClient->IncrementLocalCounter();
                     }
-                    execTimeStart = chrono::high_resolution_clock::now();;      // measure response time of the tran_type 2
-                    ret_p = tClient->PaymentTransactionSP(dbc);
+                    execTimeStart = chrono::high_resolution_clock::now();
+                    ; // measure response time of the tran_type 2
+                    ret_p   = tClient->PaymentTransactionSP(dbc);
                     latency = chrono::duration_cast<chrono::nanoseconds>(chrono::high_resolution_clock::now() - execTimeStart).count();
-                    if(ret_p == 1){
+                    if (ret_p == 1)
+                    {
                         tClient->SetLatency(latency, 2);
                         commitTime = duration_cast<chrono::nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
-                        g->containers[tClient->GetClientNum()-1]->Insert(tClient->GetLocalCounter(), commitTime);
+                        g->containers[tClient->GetClientNum() - 1]->Insert(tClient->GetLocalCounter(), commitTime);
                         tClient->IncrementLocalCounter();
                     }
-		} else if (p > 96) {
-                    execTimeStart = chrono::high_resolution_clock::now();      // measure response time of the tran_type 3
-                    ret_co = tClient->CountOrdersTransactionSP(dbc);
+                }
+                else if (p > 96)
+                {
+                    execTimeStart = chrono::high_resolution_clock::now(); // measure response time of the tran_type 3
+                    ret_co        = tClient->CountOrdersTransactionSP(dbc);
                     latency = chrono::duration_cast<chrono::nanoseconds>(chrono::high_resolution_clock::now() - execTimeStart).count();
-                    if(ret_co == 1){
+                    if (ret_co == 1)
+                    {
                         tClient->SetLatency(latency, 3);
                         commitTime = duration_cast<chrono::nanoseconds>(high_resolution_clock::now().time_since_epoch()).count();
-                        g->containers[tClient->GetClientNum()-1]->Insert(tClient->GetLocalCounter(), commitTime);
+                        g->containers[tClient->GetClientNum() - 1]->Insert(tClient->GetLocalCounter(), commitTime);
                         tClient->IncrementLocalCounter();
-                   }
-		}
+                    }
+                }
             }
         }
-    }
+    } // end of systemx/mysql
 }
 
 void Workload::AnalyticalWorkload(AnalyticalClient* aClient , Globals* g){
