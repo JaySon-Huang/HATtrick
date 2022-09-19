@@ -288,6 +288,7 @@ vector<vector<string>> SQLDialect::createSchemaStmt = {
                 "	C_MKTSEGMENT VARCHAR(10),\n"
                 "	C_PAYMENTCNT INTEGER,\n"
                 "	PRIMARY KEY (C_CUSTKEY)\n"
+                "	, KEY `idx_c_name` (`C_NAME`)\n"
                 ")",
                 "CREATE TABLE HAT.SUPPLIER (\n"
                 "	S_SUPPKEY INTEGER NOT NULL,\n"
@@ -299,6 +300,7 @@ vector<vector<string>> SQLDialect::createSchemaStmt = {
                 "	S_PHONE CHAR(15),\n"
                 "	S_YTD DECIMAL,\n"
                 "	PRIMARY KEY (S_SUPPKEY)\n"
+                "	, KEY `idx_s_name` (`S_NAME`)\n"
                 ")",
                 "CREATE TABLE HAT.DATE (\n"
                 "	D_DATEKEY INTEGER NOT NULL,\n"
@@ -319,6 +321,7 @@ vector<vector<string>> SQLDialect::createSchemaStmt = {
                 "	D_HOLIDAYFL BOOLEAN,\n"
                 "	D_WEEKDAYFL BOOLEAN,\n"
                 "	PRIMARY KEY (D_DATEKEY)\n"
+                "	, KEY `idx_d_date` (`D_DATE`)\n"
                 ")",
                 "CREATE TABLE HAT.LINEORDER (\n"
                 "	LO_ORDERKEY INTEGER NOT NULL,\n"
@@ -339,6 +342,7 @@ vector<vector<string>> SQLDialect::createSchemaStmt = {
                 "	LO_SHIPMODE CHAR(10),\n"
                 "	UNIQUE KEY `UK_ORDR_LINE` ((tidb_shard(`LO_ORDERKEY`)),`LO_ORDERKEY`,`LO_LINENUMBER`)\n"
                 // "	PRIMARY KEY (LO_ORDERKEY,LO_LINENUMBER)\n"
+                "	, KEY `idx_lo_custkey` (`LO_CUSTKEY`)\n"
                 ")/*T! SHARD_ROW_ID_BITS=6 */",
                 "CREATE TABLE HAT.HISTORY (\n"
                 "	H_ORDERKEY INTEGER NOT NULL,\n"
@@ -778,10 +782,11 @@ vector<vector<string>> SQLDialect::createIndexStmt = {
                 "ALTER TABLE hat.lineorder ADD CONSTRAINT fk_lo_suppkey FOREIGN KEY (LO_SUPPKEY) REFERENCES HAT.SUPPLIER (S_SUPPKEY) MATCH FULL;",
                 "ALTER TABLE hat.lineorder ADD CONSTRAINT fk_lo_orderdate FOREIGN KEY (LO_ORDERDATE) REFERENCES HAT.DATE (D_DATEKEY) MATCH FULL;",
                 "ALTER TABLE hat.lineorder ADD CONSTRAINT fk_lo_commitdate FOREIGN KEY (LO_COMMITDATE) REFERENCES HAT.DATE (D_DATEKEY) MATCH FULL;",
-                "CREATE INDEX idx_lo_custkey ON hat.lineorder (lo_custkey) USING btree;", 
-                "CREATE INDEX idx_c_name ON hat.customer (c_name) USING btree;",
-                "CREATE INDEX idx_s_name ON hat.supplier (s_name) USING btree;",
-                "CREATE INDEX idx_d_date ON hat.date (d_date) USING btree;",
+                // The indexes are created as soon as the table are created
+                // "CREATE INDEX idx_lo_custkey ON hat.lineorder (lo_custkey) USING btree;", 
+                // "CREATE INDEX idx_c_name ON hat.customer (c_name) USING btree;",
+                // "CREATE INDEX idx_s_name ON hat.supplier (s_name) USING btree;",
+                // "CREATE INDEX idx_d_date ON hat.date (d_date) USING btree;",
                 "ANALYZE TABLE hat.lineorder;",
                 "ANALYZE TABLE hat.customer;",
                 "ANALYZE TABLE hat.supplier;",
